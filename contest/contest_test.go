@@ -3,6 +3,8 @@ package contest
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -40,14 +42,24 @@ func TestDo(t *testing.T) {
 			expectedPicked: 0,
 		},
 	}
+	Version = "test"
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			result := Do(test.candidates, test.pick)
-			assert.Len(t, result, test.expectedPicked)
+			if test.expectedPicked == 0 {
+				require.Nil(t, result)
+				return
+			} else {
+				require.NotNil(t, result)
+			}
+			assert.Len(t, result.Winners, test.expectedPicked)
 
 			if len(test.expectedList) > 0 {
-				assert.ElementsMatch(t, result, test.expectedList)
+				assert.ElementsMatch(t, result.Winners, test.expectedList)
 			}
+
+			assert.Equal(t, "test", result.Version)
+			assert.NotEmpty(t, result.Time)
 		})
 	}
 }

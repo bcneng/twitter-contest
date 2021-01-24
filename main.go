@@ -6,23 +6,12 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/sirupsen/logrus"
 	"github.com/bcneng/twitter-contest/twitter"
+	"github.com/sirupsen/logrus"
 )
-
-// Version stores the git commit SHA from where the app got built. Injected when building.
-var Version string
-
-// ResponseBody represents the lambda response body
-type ResponseBody struct {
-	Winners []string  `json:"winners"`
-	Version string    `json:"version"`
-	Time    time.Time `json:"time"`
-}
 
 func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
 	apiKey, err := getQueryParam(request, "api_key", true)
@@ -62,7 +51,7 @@ func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResp
 	}
 	account = strings.TrimPrefix(account, "@")
 
-	winners, err := twitter.Contest(twitter.Credentials{
+	result, err := twitter.Contest(twitter.Credentials{
 		APIKey:       apiKey,
 		APIKeySecret: apiKeySecret,
 	}, tweetID, pick, account)
@@ -71,17 +60,13 @@ func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResp
 		return nil, err
 	}
 
-	if len(winners) > 0 {
-		logrus.WithField("winners", winners).Infoln("found winners!")
+	if len(result.Winners) > 0 {
+		logrus.WithField("winners", result.Winners).Infoln("found winners!")
 	} else {
 		logrus.Infoln("could not find winners")
 	}
 
-	encodedBody, err := json.Marshal(ResponseBody{
-		Version: Version,
-		Winners: winners,
-		Time:    time.Now(),
-	})
+	encodedBody, err := json.Marshal(result)
 	if err != nil {
 		return nil, err
 	}

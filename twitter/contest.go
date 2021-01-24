@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 
+	"github.com/bcneng/twitter-contest/contest"
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/sirupsen/logrus"
-	"github.com/bcneng/twitter-contest/contest"
 	"golang.org/x/oauth2/clientcredentials"
 )
 
@@ -17,7 +17,7 @@ type Credentials struct {
 }
 
 // Contest runs a contest on Twitter.
-func Contest(creds Credentials, tweetID, pick int, account string) ([]string, error) {
+func Contest(creds Credentials, tweetID, pick int, account string) (*contest.Result, error) {
 	config := &clientcredentials.Config{
 		ClientID:     creds.APIKey,
 		ClientSecret: creds.APIKeySecret,
