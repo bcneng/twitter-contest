@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
@@ -14,6 +15,13 @@ import (
 )
 
 func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
+	if os.Getenv("TWITTERCONTEST_BEARER_TOKEN") != strings.TrimPrefix(request.Headers["authorization"], "Bearer ") {
+		return &events.APIGatewayProxyResponse{
+			StatusCode:      401,
+			IsBase64Encoded: false,
+		}, nil
+	}
+
 	apiKey, err := getQueryParam(request, "api_key", true)
 	if err != nil {
 		return nil, err
